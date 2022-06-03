@@ -1,0 +1,29 @@
+[
+    {
+      "id": 1,
+      "title": "Graduation",
+      "artist": "Kanye West",
+      "year": "2007",
+      "albumCover": "https://upload.wikimedia.org/wikipedia/en/thumb/7/70/Graduation_%28album%29.jpg/220px-Graduation_%28album%29.jpg",
+      "genre":"Hip-Hop",
+      "singleSong": "Stronger"
+    },
+    {
+      "id": 2,
+      "title": "808s & Heartbreak",
+      "artist": "Kanye West",
+      "year": "2008",
+      "albumCover": "https://en.wikipedia.org/wiki/808s_%26_Heartbreak#/media/File:808s_&_Heartbreak.png",
+      "genre":"Hip-Hop",
+      "singleSong": "Heartless"
+    },
+    {
+      "id": 3,
+      "title": "Thriller",
+      "artist": "Michael Jackson",
+      "year": "1982",
+      "albumCover": "https://en.wikipedia.org/wiki/Thriller_(album)#/media/File:Michael_Jackson_-_Thriller.png",
+      "genre":"Pop",
+      "singleSong": "Billie Jean"
+    }
+]
