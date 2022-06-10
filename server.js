@@ -4,6 +4,8 @@ const app = express()
 const env = require("dotenv")
 env.config()
 
+const path = require("path")
+
 const musicService = require("./musicService")
 
 const HTTP_PORT = process.env.PORT || 8080
@@ -12,8 +14,10 @@ function onHttpStart() {
   console.log("Express Server is running on PORT: " + HTTP_PORT + " 🚀🚀🚀")
 }
 
+app.use(express.static("public"));
+
 app.get("/", (req, res) => {
-  res.send("NOT-ify")
+  res.sendFile(path.join(__dirname,"/views/index.html"))
 })
 
 app.get("/albums", (req, res) => {
