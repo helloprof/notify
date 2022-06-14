@@ -39,6 +39,25 @@ module.exports.getAlbums = () => {
     })
 }
 
+module.exports.getAlbumById = (id) => {
+    return new Promise((resolve, reject) => {
+        var album;
+        for (let i = 0; i < albums.length; i++) {
+            if(albums[i].id == id) {
+                album = albums[i]
+            } 
+        }
+        // can also use FIND function (selects one object)
+        // let album = albums.find(album => album.id == id)
+
+        if (album) {
+            resolve(album)
+        } else {
+            reject("no album found with that id!")
+        }
+    })
+}
+
 // module.exports.getPublishedAlbums = () => {
 //     return new Promise((resolve, reject) => {
 //         let albumsArray = []
