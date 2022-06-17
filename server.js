@@ -41,7 +41,7 @@ app.get("/albums", (req, res) => {
   musicService.getAlbums().then((albumsData) => {
     res.render('index', {
       data: albumsData,
-      layout: false
+      layout: "main"
     })
   }).catch((err) => {
     console.log(err)
@@ -49,7 +49,11 @@ app.get("/albums", (req, res) => {
 })
 
 app.get("/albums/new", (req, res) => {
-  res.sendFile(path.join(__dirname, "/views/albumForm.html"))
+  // res.sendFile(path.join(__dirname, "/views/albumForm.html"))
+  res.render("albumForm", {
+    data: null, 
+    layout: "main"
+  })
 })
 
 app.get("/albums/:id", (req, res) => {
