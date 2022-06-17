@@ -18,6 +18,9 @@ cloudinary.config({
   secure: true
 })
 
+const exphbs = require('express-handlebars')
+app.engine('.hbs', exphbs.engine({ extname: '.hbs' }))
+app.set('view engine', '.hbs')
 
 const HTTP_PORT = process.env.PORT || 8080
 
@@ -30,17 +33,19 @@ app.use(express.static("public"));
 const upload = multer(); // no { storage: storage } since we are not using disk storage
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "/views/index.html"))
+  // res.sendFile(path.join(__dirname, "/views/index.html"))
+  res.redirect("/albums")
 })
 
 app.get("/albums", (req, res) => {
   musicService.getAlbums().then((albumsData) => {
-    res.json(albumsData)
+    res.render('index', {
+      data: albumsData,
+      layout: false
+    })
   }).catch((err) => {
     console.log(err)
   })
-
-  // what the final response should look like: res.json(albumsData)
 })
 
 app.get("/albums/new", (req, res) => {
@@ -75,21 +80,24 @@ app.post("/albums/new", upload.single("albumCover"), (req, res) => {
 
     async function upload(req) {
       let result = await streamUpload(req);
-      console.log(result);
       return result;
     }
 
     upload(req).then((uploaded) => {
-      processPost(uploaded.url);
+      processAlbum(uploaded.url);
     });
   } else {
-    processPost("");
+    processAlbum("");
   }
 
-  function processPost(imageUrl) {
+  function processAlbum(imageUrl) {
     req.body.albumCover = imageUrl;
 
-    // TODO: Process the req.body and add it as a new Blog Post before redirecting to /posts
+    console.log(req.body)
+
+    musicService.addAlbum(req.body).then(() => {
+      res.redirect("/albums")
+    })
   }
 
 })
