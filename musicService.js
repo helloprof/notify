@@ -58,21 +58,21 @@ module.exports.getAlbumById = (id) => {
     })
 }
 
-// module.exports.getPublishedAlbums = () => {
-//     return new Promise((resolve, reject) => {
-//         let albumsArray = []
-//         for (let i = 0; i < albums.length; i++) {
-//             if (albums[i].published == true) {
-//                 albumsArray.push(albums[i])
-//             }
-//           }
-//         if (albumsArray) {
-//             resolve(albumsArray)
-//         } else {
-//             reject("no published")
-//         }
-//     })
-// }
+module.exports.getAlbumsByGenre = (genre) => {
+    return new Promise((resolve, reject) => {
+        let albumsArray = []
+        for (let i = 0; i < albums.length; i++) {
+            if (albums[i].genre == genre) {
+                albumsArray.push(albums[i])
+            }
+          }
+        if (albumsArray) {
+            resolve(albumsArray)
+        } else {
+            reject("no published")
+        }
+    })
+}
 
 module.exports.getGenres = () => {
     return new Promise((resolve, reject) => {
