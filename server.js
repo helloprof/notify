@@ -19,7 +19,12 @@ cloudinary.config({
 })
 
 const exphbs = require('express-handlebars')
-app.engine('.hbs', exphbs.engine({ extname: '.hbs' }))
+app.engine('.hbs', exphbs.engine({ 
+  extname: '.hbs',
+  // defaultLayout: 'main',
+  // layoutsDir: 'views/layouts',
+  // partialsDir: 'views/partials'
+}))
 app.set('view engine', '.hbs')
 
 const HTTP_PORT = process.env.PORT || 8080
@@ -38,27 +43,46 @@ app.get("/", (req, res) => {
 })
 
 app.get("/albums", (req, res) => {
-  musicService.getAlbums().then((albumsData) => {
-    res.render('index', {
-      data: albumsData,
-      layout: "main"
+  if (req.query.genre) {
+    musicService.getAlbumsByGenre(req.query.genre).then((genreAlbumsData) => {
+      res.render('index', {
+        data: genreAlbumsData,
+        layout: 'main'
+      })
+    }).catch((err) => {
+      console.log(err)
     })
-  }).catch((err) => {
-    console.log(err)
-  })
+  } else {
+    musicService.getAlbums().then((albumsData) => {
+      res.render('index', {
+        data: albumsData,
+        layout: 'main'
+      })
+    }).catch((err) => {
+      console.log(err)
+    })
+  }
 })
 
 app.get("/albums/new", (req, res) => {
   // res.sendFile(path.join(__dirname, "/views/albumForm.html"))
-  res.render("albumForm", {
-    data: null, 
-    layout: "main"
+  musicService.getGenres().then((genres) => {
+    res.render('albumForm', {
+      data: genres, 
+      layout: 'main'
+    })
   })
 })
 
 app.get("/albums/:id", (req, res) => {
   musicService.getAlbumById(req.params.id).then((album) => {
-    res.json(album)
+    let albumArray = []
+    albumArray.push(album)
+    res.render('index', {
+      data: albumArray, 
+      layout: 'main'
+    })
+    // res.json(album)
   }).catch((err) => {
     res.json({ message: err })
   })
@@ -108,10 +132,17 @@ app.post("/albums/new", upload.single("albumCover"), (req, res) => {
 
 
 app.get("/genres", (req, res) => {
-  musicService.getGenres().then((data) => {
-    res.json(data)
+  musicService.getGenres().then((genres) => {
+    // res.json(genres)
+    
+    res.render('genres', {
+      data: genres,
+      layout: 'main'
+    })
   }).catch((err) => {
-    console.log(err)
+    res.render('genres', {
+      message: "no results"
+    })
   })
 
   // what the final response should look like: res.json(albumsData)
@@ -120,7 +151,11 @@ app.get("/genres", (req, res) => {
 
 
 app.use((req, res) => {
-  res.status(404).send("Page Not Found")
+  // res.status(404).send("Page Not Found")
+  res.render('404', {
+    data: null,
+    layout: 'main'
+  })
 })
 
 
