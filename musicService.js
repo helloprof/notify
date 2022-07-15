@@ -76,25 +76,32 @@ Album.belongsTo(Genre, {foreignKey: 'genreID'})
 
 module.exports.initialize = () => {
     return new Promise((resolve, reject) => {
-        fs.readFile('./data/albums.json', 'utf8', (err, data) => {
-            if (err) {
-                reject(err)
-                console.log("ERROR: " +err)
+        // fs.readFile('./data/albums.json', 'utf8', (err, data) => {
+        //     if (err) {
+        //         reject(err)
+        //         console.log("ERROR: " +err)
                 
-            } else {
+        //     } else {
 
-                albums = JSON.parse(data)
+        //         albums = JSON.parse(data)
 
-                fs.readFile('./data/genres.json', 'utf8', (err, data) => {
-                    if (err) {
-                        reject(err)
-                        console.log("ERROR: " +err)
-                    } else {
-                        genres = JSON.parse(data)
-                        resolve("SUCCESS!")
-                    }
-                })
-            }
+        //         fs.readFile('./data/genres.json', 'utf8', (err, data) => {
+        //             if (err) {
+        //                 reject(err)
+        //                 console.log("ERROR: " +err)
+        //             } else {
+        //                 genres = JSON.parse(data)
+        //                 resolve("SUCCESS!")
+        //             }
+        //         })
+        //     }
+        // })
+
+        sequelize.sync().then(() => {
+          console.log("POSTGRES CONNECTION HAS BEEN MADE SUCCESSFULLY!")
+          resolve()
+        }).catch((err) => {
+          console.log("POSTGRES CONNECTION FAILED, ERROR: "+err)
         })
     })
 
@@ -102,11 +109,18 @@ module.exports.initialize = () => {
 
 module.exports.getAlbums = () => {
     return new Promise((resolve, reject) => {
-        if (albums) {
-            resolve(albums)
-        } else {
-            reject("no albums")
-        }
+        // if (albums) {
+        //     resolve(albums)
+        // } else {
+        //     reject("no albums")
+        // }
+
+        Album.findAll().then((data) => {
+          resolve(data)
+        }).catch((err) => {
+          console.log(error)
+          reject("Albums not available")
+        })
     })
 }
 
@@ -147,27 +161,62 @@ module.exports.getAlbumsByGenre = (genre) => {
 
 module.exports.getGenres = () => {
     return new Promise((resolve, reject) => {
-        if (genres) {
-            resolve(genres)
-        } else {
-            reject("no genres")
-        }
+        // if (genres) {
+        //     resolve(genres)
+        // } else {
+        //     reject("no genres")
+        // }
+
+        Genre.findAll().then((data) => {
+          resolve(data)
+        }).catch((err) => {
+          console.log(error)
+          reject("Genres not available")
+        })
     })
 }
 
 module.exports.addAlbum = (album) => {
     return new Promise((resolve, reject) => {
-        if(album) {
-            album.id = albums.length + 1
-            albums.push(album)
-            resolve("success")
-        } else {
-            reject("album not available")
-        }
+        // if(album) {
+        //     album.id = albums.length + 1
+        //     albums.push(album)
+        //     resolve("success")
+        // } else {
+        //     reject("album not available")
+        // }
+
+        Album.create(album).then((data) => {
+          console.log("NEW ALBUM ADDED: "+ data)
+          resolve()
+        }).catch((err) => {
+          console.log("NEW ALBUM FAILURE, ERROR: "+err)
+          reject()
+        })
 
     })
 }
 
 
+module.exports.deleteAlbum = (albumID) => {
+  return new Promise((resolve, reject) => {
+      // if (albums) {
+      //     resolve(albums)
+      // } else {
+      //     reject("no albums")
+      // }
+
+      Album.destroy({
+        where: {
+          albumID: albumID
+        }
+      }).then(() => {
+        console.log("ALBUM DELETE SUCCESSFUL")
+        resolve()
+      }).catch((err) => {
+        console.log("ALBUM DELETE FAILURE, ERROR: "+ err)
+      })
+  })
+}
 
 
