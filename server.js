@@ -40,20 +40,22 @@ const upload = multer(); // no { storage: storage } since we are not using disk 
 app.get("/", (req, res) => {
   // res.sendFile(path.join(__dirname, "/views/index.html"))
   res.redirect("/albums")
+  // res.json("nice!")
 })
 
 app.get("/albums", (req, res) => {
-  if (req.query.genre) {
-    musicService.getAlbumsByGenre(req.query.genre).then((genreAlbumsData) => {
-      res.render('index', {
-        data: genreAlbumsData,
-        layout: 'main'
-      })
-    }).catch((err) => {
-      console.log(err)
-    })
-  } else {
+  // if (req.query.genre) {
+  //   musicService.getAlbumsByGenre(req.query.genre).then((genreAlbumsData) => {
+  //     res.render('index', {
+  //       data: genreAlbumsData,
+  //       layout: 'main'
+  //     })
+  //   }).catch((err) => {
+  //     console.log(err)
+  //   })
+  // } else {
     musicService.getAlbums().then((albumsData) => {
+      console.log(albumsData)
       res.render('index', {
         data: albumsData,
         layout: 'main'
@@ -61,32 +63,34 @@ app.get("/albums", (req, res) => {
     }).catch((err) => {
       console.log(err)
     })
-  }
+  // }
 })
 
 app.get("/albums/new", (req, res) => {
   // res.sendFile(path.join(__dirname, "/views/albumForm.html"))
-  musicService.getGenres().then((genres) => {
-    res.render('albumForm', {
-      data: genres, 
-      layout: 'main'
-    })
-  })
+  res.render('albumForm')
+  
+  // musicService.getGenres().then((genres) => {
+  //   res.render('albumForm', {
+  //     data: genres, 
+  //     layout: 'main'
+  //   })
+  // })
 })
 
-app.get("/albums/:id", (req, res) => {
-  musicService.getAlbumById(req.params.id).then((album) => {
-    let albumArray = []
-    albumArray.push(album)
-    res.render('index', {
-      data: albumArray, 
-      layout: 'main'
-    })
-    // res.json(album)
-  }).catch((err) => {
-    res.json({ message: err })
-  })
-})
+// app.get("/albums/:id", (req, res) => {
+//   musicService.getAlbumById(req.params.id).then((album) => {
+//     let albumArray = []
+//     albumArray.push(album)
+//     res.render('index', {
+//       data: albumArray, 
+//       layout: 'main'
+//     })
+//     // res.json(album)
+//   }).catch((err) => {
+//     res.json({ message: err })
+//   })
+// })
 
 app.post("/albums/new", upload.single("albumCover"), (req, res) => {
   if (req.file) {
@@ -131,24 +135,31 @@ app.post("/albums/new", upload.single("albumCover"), (req, res) => {
 })
 
 
-app.get("/genres", (req, res) => {
-  musicService.getGenres().then((genres) => {
-    // res.json(genres)
+// app.get("/genres", (req, res) => {
+//   musicService.getGenres().then((genres) => {
+//     // res.json(genres)
     
-    res.render('genres', {
-      data: genres,
-      layout: 'main'
-    })
+//     res.render('genres', {
+//       data: genres,
+//       layout: 'main'
+//     })
+//   }).catch((err) => {
+//     res.render('genres', {
+//       message: "no results"
+//     })
+//   })
+
+//   // what the final response should look like: res.json(albumsData)
+// })
+
+
+app.get('/albums/delete/:id', (req, res) => {
+  musicService.deleteAlbum(req.params.id).then(() => {
+    res.redirect('/albums')
   }).catch((err) => {
-    res.render('genres', {
-      message: "no results"
-    })
+    res.status(500).send("ERROR - ALBUM DELETE FAILURE")
   })
-
-  // what the final response should look like: res.json(albumsData)
 })
-
-
 
 app.use((req, res) => {
   // res.status(404).send("Page Not Found")
