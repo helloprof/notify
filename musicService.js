@@ -28,16 +28,6 @@ var sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.
 //         console.log('Unable to connect to the database:', err);
 //     })
 
-
-
-var object = {"id": 1,
-              "title": "Graduation",
-              "artist": "Kanye West",
-              "year": "2007",
-              "albumCover": "https://a5.mzstatic.com/us/r1000/0/Music114/v4/db/ce/e7/dbcee73f-015e-d994-abe4-58fbdfd0569c/00602577027864.rgb.jpg",
-              "genre":"Hip-Hop",
-              "singleSong": "Stronger"}
-
 var Album = sequelize.define('Album', {
   albumID: {
     type: Sequelize.INTEGER,
