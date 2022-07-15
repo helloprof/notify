@@ -205,6 +205,7 @@ module.exports.deleteAlbum = (albumID) => {
         resolve()
       }).catch((err) => {
         console.log("ALBUM DELETE FAILURE, ERROR: "+ err)
+        reject()
       })
   })
 }
