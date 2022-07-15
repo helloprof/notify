@@ -9,7 +9,11 @@
           <h6 class="card-title">{{artist}}</h6>
           <p class="card-text">{{year}}</p>
           <a href="/albums/{{id}}" class="btn btn-primary">More Info</a>
+          {{#if genre}}
           <a href="/albums?genre={{genre}}" class="btn btn-warning">{{genre}}</a>
+          {{/if}}
+          <a href="/albums/delete/{{albumID}}" class="btn btn-danger">Delete</a>
+
           {{!-- <a href="/music/stronger.mp3" class="btn btn-success">Play</a> --}}
         </div>
       </div>
