@@ -18,16 +18,6 @@ var sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.
     query: { raw: true }
 })
 
-// // just to check if postgres credentials are working
-// sequelize
-//     .authenticate()
-//     .then(function() {
-//         console.log('Connection has been established successfully.')
-//     })
-//     .catch(function(err) {
-//         console.log('Unable to connect to the database:', err);
-//     })
-
 var Album = sequelize.define('Album', {
   albumID: {
     type: Sequelize.INTEGER,
@@ -66,27 +56,6 @@ Album.belongsTo(Genre, {foreignKey: 'genreID'})
 
 module.exports.initialize = () => {
     return new Promise((resolve, reject) => {
-        // fs.readFile('./data/albums.json', 'utf8', (err, data) => {
-        //     if (err) {
-        //         reject(err)
-        //         console.log("ERROR: " +err)
-                
-        //     } else {
-
-        //         albums = JSON.parse(data)
-
-        //         fs.readFile('./data/genres.json', 'utf8', (err, data) => {
-        //             if (err) {
-        //                 reject(err)
-        //                 console.log("ERROR: " +err)
-        //             } else {
-        //                 genres = JSON.parse(data)
-        //                 resolve("SUCCESS!")
-        //             }
-        //         })
-        //     }
-        // })
-
         sequelize.sync().then(() => {
           console.log("POSTGRES CONNECTION HAS BEEN MADE SUCCESSFULLY!")
           resolve()
@@ -99,12 +68,6 @@ module.exports.initialize = () => {
 
 module.exports.getAlbums = () => {
     return new Promise((resolve, reject) => {
-        // if (albums) {
-        //     resolve(albums)
-        // } else {
-        //     reject("no albums")
-        // }
-
         Album.findAll().then((data) => {
           resolve(data)
         }).catch((err) => {
@@ -114,49 +77,38 @@ module.exports.getAlbums = () => {
     })
 }
 
-module.exports.getAlbumById = (id) => {
+module.exports.getAlbumById = (albumID) => {
     return new Promise((resolve, reject) => {
-        var album;
-        for (let i = 0; i < albums.length; i++) {
-            if(albums[i].id == id) {
-                album = albums[i]
-            } 
+      Album.findAll({
+        where: {
+          albumID: albumID
         }
-        // can also use FIND function (selects one object)
-        // let album = albums.find(album => album.id == id)
-
-        if (album) {
-            resolve(album)
-        } else {
-            reject("no album found with that id!")
-        }
+      }).then((data) => {
+        resolve(data)
+      }).catch((err) => {
+        console.log(error)
+        reject("Albums not available")
+      })
     })
 }
 
-module.exports.getAlbumsByGenre = (genre) => {
+module.exports.getAlbumsByGenre = (genreID) => {
     return new Promise((resolve, reject) => {
-        let albumsArray = []
-        for (let i = 0; i < albums.length; i++) {
-            if (albums[i].genre == genre) {
-                albumsArray.push(albums[i])
-            }
+        Album.findAll({
+          where: {
+            genreID: genreID
           }
-        if (albumsArray) {
-            resolve(albumsArray)
-        } else {
-            reject("no published")
-        }
+        }).then((data) => {
+          resolve(data)
+        }).catch((err) => {
+          console.log(error)
+          reject("Albums not available")
+        })
     })
 }
 
 module.exports.getGenres = () => {
     return new Promise((resolve, reject) => {
-        // if (genres) {
-        //     resolve(genres)
-        // } else {
-        //     reject("no genres")
-        // }
-
         Genre.findAll().then((data) => {
           resolve(data)
         }).catch((err) => {
@@ -168,14 +120,6 @@ module.exports.getGenres = () => {
 
 module.exports.addAlbum = (album) => {
     return new Promise((resolve, reject) => {
-        // if(album) {
-        //     album.id = albums.length + 1
-        //     albums.push(album)
-        //     resolve("success")
-        // } else {
-        //     reject("album not available")
-        // }
-
         Album.create(album).then((data) => {
           console.log("NEW ALBUM ADDED: "+ data)
           resolve()
@@ -183,19 +127,24 @@ module.exports.addAlbum = (album) => {
           console.log("NEW ALBUM FAILURE, ERROR: "+err)
           reject()
         })
-
     })
 }
 
 
+module.exports.addGenre = (genre) => {
+  return new Promise((resolve, reject) => {
+      Genre.create(genre).then((data) => {
+        console.log("NEW GENRE ADDED: "+ data)
+        resolve()
+      }).catch((err) => {
+        console.log("NEW GENRE FAILURE, ERROR: "+err)
+        reject()
+      })
+  })
+}
+
 module.exports.deleteAlbum = (albumID) => {
   return new Promise((resolve, reject) => {
-      // if (albums) {
-      //     resolve(albums)
-      // } else {
-      //     reject("no albums")
-      // }
-
       Album.destroy({
         where: {
           albumID: albumID
@@ -210,4 +159,63 @@ module.exports.deleteAlbum = (albumID) => {
   })
 }
 
+module.exports.deleteGenre = (genreID) => {
+  return new Promise((resolve, reject) => {
+      Genre.destroy({
+        where: {
+          genreID: genreID
+        }
+      }).then(() => {
+        console.log("GENRE DELETE SUCCESSFUL")
+        resolve()
+      }).catch((err) => {
+        console.log("GENRE DELETE FAILURE, ERROR: "+ err)
+        reject()
+      })
+  })
+}
 
+module.exports.addSong = (song) => {
+  return new Promise((resolve, reject) => {
+      song.single = song.single ? true : false 
+
+      Song.create(song).then((data) => {
+        console.log("NEW SONG ADDED: "+ data)
+        resolve()
+      }).catch((err) => {
+        console.log("NEW SONG FAILURE, ERROR: "+err)
+        reject()
+      })
+  })
+}
+
+module.exports.getSongs = (albumID) => {
+  return new Promise((resolve, reject) => {
+      Song.findAll({
+        where: {
+          albumID: albumID
+        }
+      }).then((data) => {
+        resolve(data)
+      }).catch((err) => {
+        console.log(err)
+        reject("Songs not available")
+      })
+  })
+}
+
+module.exports.deleteSong = (songID) => {
+  return new Promise((resolve, reject) => {
+      Song.destroy({
+        where: {
+          songID: songID
+        }
+      }).then(() => {
+        console.log("SONG DELETE SUCCESSFUL")
+        resolve()
+      }).catch((err) => {
+        console.log("SONG DELETE FAILURE, ERROR: "+ err)
+        reject()
+      })
+  })
+}
