@@ -19,7 +19,7 @@ cloudinary.config({
 })
 
 const exphbs = require('express-handlebars')
-app.engine('.hbs', exphbs.engine({ 
+app.engine('.hbs', exphbs.engine({
   extname: '.hbs',
   // defaultLayout: 'main',
   // layoutsDir: 'views/layouts',
@@ -37,6 +37,8 @@ app.use(express.static("public"));
 
 const upload = multer(); // no { storage: storage } since we are not using disk storage
 
+app.use(express.urlencoded({ extended: true }));
+
 app.get("/", (req, res) => {
   // res.sendFile(path.join(__dirname, "/views/index.html"))
   res.redirect("/albums")
@@ -44,16 +46,16 @@ app.get("/", (req, res) => {
 })
 
 app.get("/albums", (req, res) => {
-  // if (req.query.genre) {
-  //   musicService.getAlbumsByGenre(req.query.genre).then((genreAlbumsData) => {
-  //     res.render('index', {
-  //       data: genreAlbumsData,
-  //       layout: 'main'
-  //     })
-  //   }).catch((err) => {
-  //     console.log(err)
-  //   })
-  // } else {
+  if (req.query.genre) {
+    musicService.getAlbumsByGenre(req.query.genre).then((genreAlbumsData) => {
+      res.render('index', {
+        data: genreAlbumsData,
+        layout: 'main'
+      })
+    }).catch((err) => {
+      console.log(err)
+    })
+  } else {
     musicService.getAlbums().then((albumsData) => {
       console.log(albumsData)
       res.render('index', {
@@ -63,34 +65,31 @@ app.get("/albums", (req, res) => {
     }).catch((err) => {
       console.log(err)
     })
-  // }
+  }
 })
 
 app.get("/albums/new", (req, res) => {
-  // res.sendFile(path.join(__dirname, "/views/albumForm.html"))
-  res.render('albumForm')
-  
-  // musicService.getGenres().then((genres) => {
-  //   res.render('albumForm', {
-  //     data: genres, 
-  //     layout: 'main'
-  //   })
-  // })
+  // res.render('albumForm')
+
+  musicService.getGenres().then((genres) => {
+    res.render('albumForm', {
+      data: genres,
+      layout: 'main'
+    })
+  })
 })
 
-// app.get("/albums/:id", (req, res) => {
-//   musicService.getAlbumById(req.params.id).then((album) => {
-//     let albumArray = []
-//     albumArray.push(album)
-//     res.render('index', {
-//       data: albumArray, 
-//       layout: 'main'
-//     })
-//     // res.json(album)
-//   }).catch((err) => {
-//     res.json({ message: err })
-//   })
-// })
+app.get("/albums/:id", (req, res) => {
+  musicService.getAlbumById(req.params.id).then((album) => {
+    res.render('index', {
+      data: album,
+      layout: 'main'
+    })
+    // res.json(album)
+  }).catch((err) => {
+    res.json({ message: err })
+  })
+})
 
 app.post("/albums/new", upload.single("albumCover"), (req, res) => {
   if (req.file) {
@@ -135,29 +134,114 @@ app.post("/albums/new", upload.single("albumCover"), (req, res) => {
 })
 
 
-// app.get("/genres", (req, res) => {
-//   musicService.getGenres().then((genres) => {
-//     // res.json(genres)
-    
-//     res.render('genres', {
-//       data: genres,
-//       layout: 'main'
-//     })
-//   }).catch((err) => {
-//     res.render('genres', {
-//       message: "no results"
-//     })
-//   })
+app.get("/genres", (req, res) => {
+  musicService.getGenres().then((genres) => {
+    res.render('genres', {
+      data: genres,
+      layout: 'main'
+    })
+  }).catch((err) => {
+    console.log(err)
+  })
+})
 
-//   // what the final response should look like: res.json(albumsData)
-// })
+app.get("/genres/new", (req, res) => {
+  res.render('genreForm')
+})
 
+app.post("/genres/new", (req, res) => {
+  musicService.addGenre(req.body).then(() => {
+    res.redirect('/genres')
+  }).catch((err) => {
+    res.status(500).send(err)
+  })
+})
+
+app.get('/genres/delete/:id', (req, res) => {
+  musicService.deleteGenre(req.params.id).then(() => {
+    res.redirect('/genres')
+  }).catch((err) => {
+    res.status(500).send("ERROR - GENRE DELETE FAILURE")
+  })
+})
 
 app.get('/albums/delete/:id', (req, res) => {
   musicService.deleteAlbum(req.params.id).then(() => {
     res.redirect('/albums')
   }).catch((err) => {
     res.status(500).send("ERROR - ALBUM DELETE FAILURE")
+  })
+})
+
+app.get("/songs/new", (req, res) => {
+  musicService.getAlbums().then((albumsData) => {
+    res.render('songForm', {
+      data: albumsData,
+      layout: 'main'
+    })
+  }).catch((err) => {
+    console.log(err)
+  })})
+
+app.post("/songs/new", upload.single("songFile"), (req, res) => {
+  if (req.file) {
+    let streamUpload = (req) => {
+      return new Promise((resolve, reject) => {
+        let stream = cloudinary.uploader.upload_stream(
+          {resource_type: 'video',
+          use_filename: true },
+          (error, result) => {
+            if (result) {
+              resolve(result);
+            } else {
+              reject(error);
+            }
+          }
+        );
+
+        streamifier.createReadStream(req.file.buffer).pipe(stream);
+      });
+    };
+
+    async function upload(req) {
+      let result = await streamUpload(req);
+      return result;
+    }
+
+    upload(req).then((uploaded) => {
+      processSong(uploaded.url);
+    });
+  } else {
+    processSong("");
+  }
+
+  function processSong(imageUrl) {
+    req.body.songFile = imageUrl;
+
+    console.log(req.body)
+
+    musicService.addSong(req.body).then(() => {
+      res.redirect("/songs")
+    })
+  }
+})
+
+app.get("/songs/:id", (req, res) => {
+  musicService.getSongs(req.params.id).then((songs) => {
+    res.render('songs', {
+      data: songs,
+      layout: 'main'
+    })
+  }).catch((err) => {
+    console.log(err)
+  })
+})
+
+app.get('/songs/delete/:id', (req, res) => {
+  musicService.deleteSong(req.params.id).then(() => {
+    res.redirect('/songs')
+  }).catch((err) => {
+    res.status(500).send("ERROR - SONG DELETE FAILURE")
   })
 })
 
