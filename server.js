@@ -6,6 +6,7 @@ env.config()
 
 const path = require("path")
 const musicService = require("./musicService")
+const userService = require("./userService")
 
 const multer = require("multer");
 const cloudinary = require('cloudinary').v2
@@ -245,6 +246,26 @@ app.get('/songs/delete/:id', (req, res) => {
   })
 })
 
+app.get("/register", (req, res) => {
+  res.render('registerForm')
+})
+
+app.post("/register", (req, res) => {
+  userService.registerUser(req.body).then((data) => {
+    console.log(data)
+    res.render('registerForm', {
+      layout: 'main',
+      successMessage: "USER SUCCESSFULLY CREATED!"
+    })
+  }).catch((err) => {
+    console.log(err)
+    res.render('registerForm', {
+      layout: 'main',
+      errorMessage: "USER REGISTRATION FAILED ERROR: "+err
+    })
+  })
+})
+
 app.use((req, res) => {
   // res.status(404).send("Page Not Found")
   res.render('404', {
@@ -254,7 +275,9 @@ app.use((req, res) => {
 })
 
 
-musicService.initialize().then(() => {
+musicService.initialize()
+.then(userService.initialize())
+.then(() => {
   app.listen(HTTP_PORT, onHttpStart)
 }).catch((err) => {
   console.log(err)
