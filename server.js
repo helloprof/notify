@@ -266,6 +266,23 @@ app.post("/register", (req, res) => {
   })
 })
 
+app.get("/login", (req, res) => {
+  res.render('loginForm')
+})
+
+app.post("/login", (req, res) => {
+  userService.loginUser(req.body).then((data) => {
+    // add session stuff
+    res.redirect("/albums")
+  }).catch((err) => {
+    console.log(err)
+    res.render('loginForm', {
+      layout: 'main',
+      errorMessage: "USER LOGIN FAILED: "+err
+    })
+  })
+})
+
 app.use((req, res) => {
   // res.status(404).send("Page Not Found")
   res.render('404', {
