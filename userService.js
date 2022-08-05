@@ -73,7 +73,17 @@ module.exports.loginUser = function(userData) {
         bcryptjs.compare(userData.password, user.password).then((result) => {
           if (result === true) {
             // save session stuff
-            resolve("USER LOGGED IN")
+            console.log(user)
+            user.loginHistory.push({dateTime: new Date(), userAgent: userData.userAgent})
+            
+            User.updateOne({ username: user.username}, 
+              { $set: { loginHistory: user.loginHistory}}
+            ).exec()
+            .then(() => {
+              resolve(user)
+            }).catch((err) => {
+              reject("ERROR UPDATING USER'S LOGIN HISTORY!")
+            })
           } else {
             reject("PASSWORD WAS INCORRECT!")
           }
