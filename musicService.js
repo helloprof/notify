@@ -180,8 +180,8 @@ module.exports.addSong = (song) => {
       song.single = song.single ? true : false 
 
       Song.create(song).then((data) => {
-        console.log("NEW SONG ADDED: "+ data)
-        resolve()
+        console.log("NEW SONG ADDED: "+ data.albumID)
+        resolve(data.albumID)
       }).catch((err) => {
         console.log("NEW SONG FAILURE, ERROR: "+err)
         reject()
@@ -206,16 +206,26 @@ module.exports.getSongs = (albumID) => {
 
 module.exports.deleteSong = (songID) => {
   return new Promise((resolve, reject) => {
-      Song.destroy({
+      Song.findOne({
         where: {
           songID: songID
         }
-      }).then(() => {
-        console.log("SONG DELETE SUCCESSFUL")
-        resolve()
+      }).then((song) => {
+        Song.destroy({
+          where: {
+            songID: songID
+          }
+        }).then(() => {
+          console.log("SONG DELETE SUCCESSFUL - ALBUMID:")
+          console.log(song.albumID)
+          resolve(song.albumID)
+        }).catch((err) => {
+          console.log("SONG DELETE FAILURE, ERROR: "+ err)
+          reject()
+        })
       }).catch((err) => {
-        console.log("SONG DELETE FAILURE, ERROR: "+ err)
-        reject()
+        reject("SONG NOT FOUND!")
       })
+
   })
 }
